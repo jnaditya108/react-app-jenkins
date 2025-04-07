@@ -4,13 +4,13 @@ pipeline {
     environment {
         AZURE_CREDENTIALS_ID = 'azure-service-principal'
         RESOURCE_GROUP = 'rg-jenkins'
-        APP_SERVICE_NAME = 'webapijenkinsaditya108'
+        APP_SERVICE_NAME = 'webapijenkinsaditya108108'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'master', url: 'https://github.com/Hardikgaur21/React-Jenkin-App.git'
+                git branch: 'master', url: 'https://github.com/jnaditya108/react-app-jenkins.git'
             }
         }
 
