@@ -14,20 +14,35 @@ pipeline {
             }
         }
 
-        stage('Terraform Init') {
+        stage('Azure Login & Terraform Init') {
             steps {
-                dir('terraform') {
-                    bat 'terraform init'
+                withCredentials([azureServicePrincipal(
+                    credentialsId: AZURE_CREDENTIALS_ID,
+                    subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
+                    clientIdVariable: 'AZURE_CLIENT_ID',
+                    clientSecretVariable: 'AZURE_CLIENT_SECRET',
+                    tenantIdVariable: 'AZURE_TENANT_ID'
+                )]) {
+                    bat """
+                        az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
+                        set ARM_CLIENT_ID=%AZURE_CLIENT_ID%
+                        set ARM_CLIENT_SECRET=%AZURE_CLIENT_SECRET%
+                        set ARM_SUBSCRIPTION_ID=%AZURE_SUBSCRIPTION_ID%
+                        set ARM_TENANT_ID=%AZURE_TENANT_ID%
+                        cd terraform
+                        terraform init
+                    """
                 }
             }
         }
 
         stage('Terraform Plan & Apply') {
             steps {
-                dir('terraform') {
-                    bat 'terraform plan -out=tfplan'
-                    bat 'terraform apply -auto-approve tfplan'
-                }
+                bat """
+                    cd terraform
+                    terraform plan -out=tfplan
+                    terraform apply -auto-approve tfplan
+                """
             }
         }
 
@@ -42,12 +57,18 @@ pipeline {
 
         stage('Deploy to Azure') {
             steps {
-                withCredentials([azureServicePrincipal(credentialsId: AZURE_CREDENTIALS_ID)]) {
-                    bat '''
+                withCredentials([azureServicePrincipal(
+                    credentialsId: AZURE_CREDENTIALS_ID,
+                    subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
+                    clientIdVariable: 'AZURE_CLIENT_ID',
+                    clientSecretVariable: 'AZURE_CLIENT_SECRET',
+                    tenantIdVariable: 'AZURE_TENANT_ID'
+                )]) {
+                    bat """
                         az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
                         powershell -Command Compress-Archive -Path ./my-react-app/build/* -DestinationPath ./my-react-app/build.zip -Force
                         az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path ./my-react-app/build.zip --type zip
-                    '''
+                    """
                 }
             }
         }
