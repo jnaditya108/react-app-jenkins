@@ -7,5 +7,5 @@ variable "location" {
 variable "app_service_plan_sku" {
   description = "The pricing SKU for the Service Plan"
   type        = string
-  default     = "P1v2"  # Adjust based on your needs (e.g., B1, S1, P1v2)
+  default     = "B1"
 }
