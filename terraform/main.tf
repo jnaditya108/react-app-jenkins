@@ -1,7 +1,8 @@
 provider "azurerm" {
   features {}
+
   subscription_id = "054f2ec0-512e-4743-b678-f72b4ac7435f"
-  tenant_id       =  "42742604-6941-4ce7-ad2a-8ce00d01a038"
+  tenant_id       = "42742604-6941-4ce7-ad2a-8ce00d01a038"
 }
 
 resource "azurerm_resource_group" "this" {
@@ -14,7 +15,7 @@ resource "azurerm_service_plan" "this" {
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
   os_type             = "Linux"
-  sku_name            = "B1"
+  sku_name            = var.app_service_plan_sku
 }
 
 resource "azurerm_linux_web_app" "this" {
@@ -25,7 +26,7 @@ resource "azurerm_linux_web_app" "this" {
 
   site_config {
     application_stack {
-      node_version = "18-lts" # Use the Node.js version compatible with your React app
+      node_version = "18-lts"
     }
   }
 
